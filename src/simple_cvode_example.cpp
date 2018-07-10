@@ -130,3 +130,77 @@ int main() {
 
   // return(0);
 }
+
+/* -- User Defined Functions -- */
+
+// Simple function.
+static int f(realtype t, N_Vector u, N_Vector u_dot, void *user_data) {
+  // N_VGetArrayPointer returns a pointer to the data in the N_Vector class.
+  realtype *udata  = N_VGetArrayPointer(u); // pointer to data of u vector
+  realtype *dudata = N_VGetArrayPointer(u_dot); // pointer to data of udot vector
+
+  dudata[0] = -101.0 * udata[0] - 100.0 * udata[1];
+  dudata[1] = udata[0];
+
+  // Printing out the values of the function.
+  std::cout << "t: " << t;
+  std::cout << "\nN_Vector: u\n";
+  N_VPrint_Serial(u);
+  std::cout << "N_Vector: u_dot\n";
+  N_VPrint_Serial(u_dot);
+
+  return(0);
+}
+
+
+/* Jacobian-times-vector routine. */
+
+static int jtv(N_Vector v, N_Vector Jv, realtype t, N_Vector u, N_Vector fu,
+               void *user_data, N_Vector tmp) {
+  realtype *udata  = N_VGetArrayPointer(u);
+  realtype *vdata  = N_VGetArrayPointer(v);
+  realtype *Jvdata = N_VGetArrayPointer(Jv);
+  realtype *fudata = N_VGetArrayPointer(fu);
+
+  Jvdata[0] = -101.0 * vdata[0] + -100.0 * vdata[1];
+  Jvdata[1] = vdata[0] + 0 * vdata[1];
+
+  fudata[0] = 0;
+  fudata[1] = 0;
+
+  return(0);
+}
+
+
+/* Check function return value...
+     opt == 0 means SUNDIALS function allocates memory so check if
+              returned NULL pointer
+     opt == 1 means SUNDIALS function returns a flag so check if
+              flag >= 0
+     opt == 2 means function allocates memory so check if returned
+              NULL pointer */
+static int check_flag(void *flagvalue, const char *funcname, int opt) {
+  int *errflag;
+
+  /* Check if SUNDIALS function returned NULL pointer - no memory allocated */
+  if (opt == 0 && flagvalue == NULL) {
+    fprintf(stderr, "\nSUNDIALS_ERROR: %s() failed - returned NULL pointer\n\n",
+            funcname);
+    return(1); }
+
+  /* Check if flag < 0 */
+  else if (opt == 1) {
+    errflag = (int *) flagvalue;
+    if (*errflag < 0) {
+      fprintf(stderr, "\nSUNDIALS_ERROR: %s() failed with flag = %d\n\n",
+              funcname, *errflag);
+      return(1); }}
+
+  /* Check if function returned NULL pointer - no memory allocated */
+  else if (opt == 2 && flagvalue == NULL) {
+    fprintf(stderr, "\nMEMORY_ERROR: %s() failed - returned NULL pointer\n\n",
+            funcname);
+    return(1); }
+
+  return(0);
+}
