@@ -27,9 +27,12 @@ int main() {
   // 3. Set vector of initial values.
   // ---------------------------------------------------------------------------
     N_Vector y; // Problem vector.
-    realtype y_0[N] = {2.0, 1.0};
-    y = N_VMake_Serial(N, y_0);
-    // y0 = N_VNew_Serial(N);
+    // realtype y_0[N] = {2.0, 1.0};
+    // y = N_VMake_Serial(N, y_0);
+    y = N_VNew_Serial(N);
+    // realtype *ydata  = N_VGetArrayPointer(y);
+    // ydata[0] = 2.0;
+    // ydata[1] = 1.0;
   // ---------------------------------------------------------------------------
 
   // 4. Create CVODE Object.
@@ -105,7 +108,7 @@ int main() {
     // std::cout << "t: " << t;
     // std::cout << "\ny:";
     // N_VPrint_Serial(y);
-    // if(check_flag(&flag, "CVode", 1)) break;
+    if(check_flag(&flag, "CVode", 1)) break;
   }
   // ---------------------------------------------------------------------------
 
