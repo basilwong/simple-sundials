@@ -7,6 +7,9 @@
 #include <sundials/sundials_types.h>  // defs. of realtype, sunindextype
 #include <sundials/sundials_math.h>  // contains the macros ABS, SUNSQR, EXP
 
+// This macro gives access to the individual components of the data array of an
+// N Vector.
+#define NV_Ith_S(v,i) ( NV_DATA_S(v)[i] )
 
 static int f(realtype t, N_Vector u, N_Vector u_dot, void *user_data);
 static int jtv(N_Vector v, N_Vector Jv, realtype t, N_Vector u, N_Vector fu,
@@ -30,9 +33,8 @@ int main() {
     // realtype y_0[N] = {2.0, 1.0};
     // y = N_VMake_Serial(N, y_0);
     y = N_VNew_Serial(N);
-    // realtype *ydata  = N_VGetArrayPointer(y);
-    // ydata[0] = 2.0;
-    // ydata[1] = 1.0;
+    NV_Ith_S(y, 0) = 2.0;
+    NV_Ith_S(y, 1) = 1.0;
   // ---------------------------------------------------------------------------
 
   // 4. Create CVODE Object.
@@ -43,8 +45,8 @@ int main() {
 
   // 5. Initialize CVODE solver.
   // ---------------------------------------------------------------------------
-  realtype t = 0; // Initiale value of time.
-  flag = CVodeInit(cvode_mem, f, t, y);
+  realtype t0 = 0; // Initiale value of time.
+  flag = CVodeInit(cvode_mem, f, t0, y);
   // if(check_flag(&flag, "CVodeSetUserData", 1)) return(1); // checks proper function
   // ---------------------------------------------------------------------------
 
@@ -69,7 +71,7 @@ int main() {
   // iterative solver that is designed to be compatible with any nvector
   // implementation (serial, threaded, parallel,
   // user-supplied)that supports a minimal subset of operations.
-  LS = SUNSPGMR(y, PREC_LEFT, 0);
+  LS = SUNSPGMR(y, 0, 0);
   //   if(check_flag((void *)LS, "SUNSPGMR", 0)) return(1); // checks proper function
   // ---------------------------------------------------------------------------
 
@@ -102,12 +104,14 @@ int main() {
   int print_steps = 100;
   realtype tout;
   realtype end_time = 50;
+  realtype step_length = 0.5;
+  realtype t = 0;
   // loop over output points, call CVode, print results, test for error
-  for (tout = 20; tout <= end_time; tout += (end_time/print_steps)) {
+  for (tout = step_length; tout <= end_time; tout += step_length) {
     flag = CVode(cvode_mem, tout, y, &t, CV_NORMAL);
-    // std::cout << "t: " << t;
-    // std::cout << "\ny:";
-    // N_VPrint_Serial(y);
+    std::cout << "t: " << t;
+    std::cout << "\ny:";
+    N_VPrint_Serial(y);
     if(check_flag(&flag, "CVode", 1)) break;
   }
   // ---------------------------------------------------------------------------
@@ -146,11 +150,11 @@ static int f(realtype t, N_Vector u, N_Vector u_dot, void *user_data) {
   dudata[1] = udata[0];
 
   // Printing out the values of the function.
-  std::cout << "t: " << t;
-  std::cout << "\nN_Vector: u\n";
-  N_VPrint_Serial(u);
-  std::cout << "N_Vector: u_dot\n";
-  N_VPrint_Serial(u_dot);
+  // std::cout << "t: " << t;
+  // std::cout << "\nN_Vector: u\n";
+  // N_VPrint_Serial(u);
+  // std::cout << "N_Vector: u_dot\n";
+  // N_VPrint_Serial(u_dot);
 
   return(0);
 }
