@@ -89,7 +89,7 @@ int main() {
   // 12. Set linear solver interface optional inputs.
   // ---------------------------------------------------------------------------
   // Sets the jacobian-times-vector function.
-  // flag = CVSpilsSetJacTimes(cvode_mem, NULL, jtv);
+  flag = CVSpilsSetJacTimes(cvode_mem, NULL, jtv);
   // if(check_flag(&flag, "CVSpilsSetJacTimes", 1)) return(1);
 
   // ---------------------------------------------------------------------------
