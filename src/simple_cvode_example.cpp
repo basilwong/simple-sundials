@@ -47,13 +47,13 @@ int main() {
   // ---------------------------------------------------------------------------
   realtype t0 = 0; // Initiale value of time.
   flag = CVodeInit(cvode_mem, f, t0, y);
-  // if(check_flag(&flag, "CVodeSetUserData", 1)) return(1); // checks proper function
+  if(check_flag(&flag, "CVodeSetUserData", 1)) return(1); // checks proper function
   // ---------------------------------------------------------------------------
 
   // 6. Specify integration tolerances.
   // ---------------------------------------------------------------------------
   flag = CVodeSStolerances(cvode_mem, reltol, abstol);
-  // if (check_flag(&flag, "CVodeSStolerances", 1)) return(1); // checks proper function
+  if (check_flag(&flag, "CVodeSStolerances", 1)) return(1); // checks proper function
   // ---------------------------------------------------------------------------
 
   // 7. Set Optional outputs.
@@ -72,7 +72,7 @@ int main() {
   // implementation (serial, threaded, parallel,
   // user-supplied)that supports a minimal subset of operations.
   LS = SUNSPGMR(y, 0, 0);
-  //   if(check_flag((void *)LS, "SUNSPGMR", 0)) return(1); // checks proper function
+  if(check_flag((void *)LS, "SUNSPGMR", 0)) return(1); // checks proper function
   // ---------------------------------------------------------------------------
 
   // 10. Set linear solver optional inputs.
@@ -83,14 +83,14 @@ int main() {
   // ---------------------------------------------------------------------------
   // CVSpilsSetLinearSolver is for iterative linear solvers.
   flag = CVSpilsSetLinearSolver(cvode_mem, LS);
-  // if (check_flag(&flag, "CVSpilsSetLinearSolver", 1)) return 1; // checks proper function
+  if (check_flag(&flag, "CVSpilsSetLinearSolver", 1)) return 1; // checks proper function
   // ---------------------------------------------------------------------------
 
   // 12. Set linear solver interface optional inputs.
   // ---------------------------------------------------------------------------
   // Sets the jacobian-times-vector function.
   flag = CVSpilsSetJacTimes(cvode_mem, NULL, jtv);
-  // if(check_flag(&flag, "CVSpilsSetJacTimes", 1)) return(1);
+  if(check_flag(&flag, "CVSpilsSetJacTimes", 1)) return(1);
 
   // ---------------------------------------------------------------------------
 
