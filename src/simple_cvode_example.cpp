@@ -1,3 +1,8 @@
+/*
+A simple example using the CVODE library to solve a simple 2d ODE, treating it
+as a stiff system. 
+*/
+
 #include <iostream>
 #include <cvode/cvode.h> // prototypes for CVODE fcts., consts.
 #include <nvector/nvector_serial.h>  // access to serial N_Vector
@@ -47,13 +52,13 @@ int main() {
   // ---------------------------------------------------------------------------
   realtype t0 = 0; // Initiale value of time.
   flag = CVodeInit(cvode_mem, f, t0, y);
-  if(check_flag(&flag, "CVodeSetUserData", 1)) return(1); // checks proper function
+  if(check_flag(&flag, "CVodeSetUserData", 1)) return(1);
   // ---------------------------------------------------------------------------
 
   // 6. Specify integration tolerances.
   // ---------------------------------------------------------------------------
   flag = CVodeSStolerances(cvode_mem, reltol, abstol);
-  if (check_flag(&flag, "CVodeSStolerances", 1)) return(1); // checks proper function
+  if (check_flag(&flag, "CVodeSStolerances", 1)) return(1);
   // ---------------------------------------------------------------------------
 
   // 7. Set Optional outputs.
@@ -72,7 +77,7 @@ int main() {
   // implementation (serial, threaded, parallel,
   // user-supplied)that supports a minimal subset of operations.
   LS = SUNSPGMR(y, 0, 0);
-  if(check_flag((void *)LS, "SUNSPGMR", 0)) return(1); // checks proper function
+  if(check_flag((void *)LS, "SUNSPGMR", 0)) return(1);
   // ---------------------------------------------------------------------------
 
   // 10. Set linear solver optional inputs.
@@ -83,7 +88,7 @@ int main() {
   // ---------------------------------------------------------------------------
   // CVSpilsSetLinearSolver is for iterative linear solvers.
   flag = CVSpilsSetLinearSolver(cvode_mem, LS);
-  if (check_flag(&flag, "CVSpilsSetLinearSolver", 1)) return 1; // checks proper function
+  if (check_flag(&flag, "CVSpilsSetLinearSolver", 1)) return 1;
   // ---------------------------------------------------------------------------
 
   // 12. Set linear solver interface optional inputs.
@@ -138,30 +143,19 @@ int main() {
   // return(0);
 }
 
-/* -- User Defined Functions -- */
-
-// Simple function.
+// Simple function that calculates the differential equation.
 static int f(realtype t, N_Vector u, N_Vector u_dot, void *user_data) {
   // N_VGetArrayPointer returns a pointer to the data in the N_Vector class.
-  realtype *udata  = N_VGetArrayPointer(u); // pointer to data of u vector
-  realtype *dudata = N_VGetArrayPointer(u_dot); // pointer to data of udot vector
+  realtype *udata  = N_VGetArrayPointer(u); // pointer u vector data
+  realtype *dudata = N_VGetArrayPointer(u_dot); // pointer to udot vector data
 
   dudata[0] = -101.0 * udata[0] - 100.0 * udata[1];
   dudata[1] = udata[0];
 
-  // Printing out the values of the function.
-  // std::cout << "t: " << t;
-  // std::cout << "\nN_Vector: u\n";
-  // N_VPrint_Serial(u);
-  // std::cout << "N_Vector: u_dot\n";
-  // N_VPrint_Serial(u_dot);
-
   return(0);
 }
 
-
-/* Jacobian-times-vector routine. */
-
+// Jacobian function vector routine.
 static int jtv(N_Vector v, N_Vector Jv, realtype t, N_Vector u, N_Vector fu,
                void *user_data, N_Vector tmp) {
   realtype *udata  = N_VGetArrayPointer(u);
@@ -178,7 +172,8 @@ static int jtv(N_Vector v, N_Vector Jv, realtype t, N_Vector u, N_Vector fu,
   return(0);
 }
 
-
+// check_flag function is from the cvDiurnals_ky.c example from the CVODE
+// package.
 /* Check function return value...
      opt == 0 means SUNDIALS function allocates memory so check if
               returned NULL pointer
