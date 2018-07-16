@@ -19,6 +19,12 @@ To download the libraries go to their software download page:
 Appendix A of the CVODE guide gives a pretty good tutorial of how to download, install, and configure the libraries for use depending on the OS you're currently using. 
 
  - https://computation.llnl.gov/sites/default/files/public/cv_guide.pdf
+ 
+*Note: The instructions above tell the user to change the generate settings for the install prefix to /usr/casc/sundials/instdir but for the GenericMakeFile it is more simple to leave the ccmake settings as is and keep the generate settings for the install prefix as the default option:
+
+```
+/usr/local
+```
 
 ## Makefile
 
