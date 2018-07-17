@@ -1,13 +1,13 @@
 /*
-A simple example using the CVODE library to solve a simple 2d ODE, treating it
+A simple example using the KINSOL library to solve a simple 2d ODE, treating it
 as a stiff system.
 */
 
 #include <iostream>
-#include <cvode/cvode.h> // prototypes for CVODE fcts., consts.
+#include "kinsol/kinsol.h" // access to KINSOL func., consts.
 #include <nvector/nvector_serial.h>  // access to serial N_Vector
 #include <sunlinsol/sunlinsol_spgmr.h>  //access to SPGMR SUNLinearSolver
-#include <cvode/cvode_spils.h> // access to CVSpils interface
+#include <kinsol/kinsol_spils.h> // access to KINSpils interface
 #include <sundials/sundials_dense.h>  // use generic dense solver in precond
 #include <sundials/sundials_types.h>  // defs. of realtype, sunindextype
 #include <sundials/sundials_math.h>  // contains the macros ABS, SUNSQR, EXP
@@ -16,7 +16,7 @@ as a stiff system.
 // N Vector.
 #define NV_Ith_S(v,i) ( NV_DATA_S(v)[i] )
 
-static int f(realtype t, N_Vector u, N_Vector u_dot, void *user_data);
+static int f(N_Vector u, N_Vector u_dot, void *user_data);
 static int jtv(N_Vector v, N_Vector Jv, realtype t, N_Vector u, N_Vector fu,
                void *user_data, N_Vector tmp);
 static int check_flag(void *flagvalue, const char *funcname, int opt);
@@ -36,125 +36,123 @@ int main() {
   sunindextype N = 2;
   // ---------------------------------------------------------------------------
 
-  // 3. Set vector of initial values.
+  // 3. Set vector with initial guess.
   // ---------------------------------------------------------------------------
-  N_Vector y; // Problem vector.
-  // realtype y_0[N] = {2.0, 1.0};
-  // y = N_VMake_Serial(N, y_0);
-  y = N_VNew_Serial(N);
-  NV_Ith_S(y, 0) = 2.0;
-  NV_Ith_S(y, 1) = 1.0;
+  N_Vector y0; // Problem vector.
+  y0 = N_VNew_Serial(N);
+  NV_Ith_S(y0, 0) = 2;
+  NV_Ith_S(y0, 1) = 1;
+  if (check_flag((void *)y0, "N_VNew_Serial", 0)) return(1);
+
+  N_Vector sc;
+  sc = N_VNew_Serial(N);
+  NV_Ith_S(sc, 0) = 1.0;
+  NV_Ith_S(sc, 1) = 1.0;
+  if (check_flag((void *)sc, "N_VNew_Serial", 0)) return(1);
+
   // ---------------------------------------------------------------------------
 
-  // 4. Create CVODE Object.
+  // 4. Create KINSOL Object.
   // ---------------------------------------------------------------------------
-  void *cvode_mem = NULL; // Problem dedicated memory.
-  cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-  // ---------------------------------------------------------------------------
-
-  // 5. Initialize CVODE solver.
-  // ---------------------------------------------------------------------------
-  realtype t0 = 0; // Initiale value of time.
-  flag = CVodeInit(cvode_mem, f, t0, y);
-  if(check_flag(&flag, "CVodeSetUserData", 1)) return(1);
+  void *kin_mem = NULL; // Problem dedicated memory.
+  kin_mem = KINCreate();
+  if (check_flag((void *)kin_mem, "KINCreate", 0)) return(1);
   // ---------------------------------------------------------------------------
 
-  // 6. Specify integration tolerances.
-  // ---------------------------------------------------------------------------
-  flag = CVodeSStolerances(cvode_mem, reltol, abstol);
-  if (check_flag(&flag, "CVodeSStolerances", 1)) return(1);
-  // ---------------------------------------------------------------------------
-
-  // 7. Set Optional outputs.
+  // 5. Set Optional Inputs.
   // ---------------------------------------------------------------------------
   // ---------------------------------------------------------------------------
 
-  // 8. Create Matrix Object.
+  // 6. Allocate Internal Memory .
+  // ---------------------------------------------------------------------------
+  flag = KINInit(kin_mem, f, y0);
+  if (check_flag(&flag, "KINInit", 1)) return(1);
+  // ---------------------------------------------------------------------------
+
+  // 7. Create Matrix Object.
   // ---------------------------------------------------------------------------
   // ---------------------------------------------------------------------------
 
-  // 9. Create Linear Solver Object.
+  // 8. Create Linear Solver Object.
   // ---------------------------------------------------------------------------
   SUNLinearSolver LS;
   // Here we chose one of the possible linear solver modules. SUNSPMR is an
   // iterative solver that is designed to be compatible with any nvector
   // implementation (serial, threaded, parallel,
   // user-supplied)that supports a minimal subset of operations.
-  LS = SUNSPGMR(y, 0, 0);
+  LS = SUNSPGMR(y0, 0, 0);
   if(check_flag((void *)LS, "SUNSPGMR", 0)) return(1);
   // ---------------------------------------------------------------------------
 
-  // 10. Set linear solver optional inputs.
+  // 9. Set linear solver optional inputs.
   // ---------------------------------------------------------------------------
   // ---------------------------------------------------------------------------
 
-  // 11. Attach linear solver module.
+  // 10. Attach linear solver module.
   // ---------------------------------------------------------------------------
   // CVSpilsSetLinearSolver is for iterative linear solvers.
-  flag = CVSpilsSetLinearSolver(cvode_mem, LS);
-  if (check_flag(&flag, "CVSpilsSetLinearSolver", 1)) return 1;
+  flag = KINSpilsSetLinearSolver(kin_mem, LS);
+  if (check_flag(&flag, "KINSpilsSetLinearSolver", 1)) return 1;
   // ---------------------------------------------------------------------------
 
-  // 12. Set linear solver interface optional inputs.
+  // 11. Set linear solver interface optional inputs.
   // ---------------------------------------------------------------------------
   // Sets the jacobian-times-vector function.
-  flag = CVSpilsSetJacTimes(cvode_mem, NULL, jtv);
-  if(check_flag(&flag, "CVSpilsSetJacTimes", 1)) return(1);
+  // flag = CVSpilsSetJacTimes(kin_mem, NULL, jtv);
+  // if(check_flag(&flag, "CVSpilsSetJacTimes", 1)) return(1);
+  // ---------------------------------------------------------------------------
+
+  // 12. Solve problem,
+  // ---------------------------------------------------------------------------
+
+  /* Call KINSol and print output concentration profile */
+  flag = KINSol(kin_mem,           /* KINSol memory block */
+                y0,             /* initial guess on input; solution vector */
+                KIN_LINESEARCH, /* global strategy choice */
+                sc,             /* scaling vector for the variable cc */
+                sc);            /* scaling vector for function values fval */
+  if (check_flag(&flag, "KINSol", 1)) return(1);
+
+  // Printing output.
+  std::cout << "Final Value of y0 vector: \n";
+  N_VPrint_Serial(y0);
 
   // ---------------------------------------------------------------------------
 
-  // 13. Specify rootfinding problem.
+  // 13. Get optional outputs.
   // ---------------------------------------------------------------------------
   // ---------------------------------------------------------------------------
 
-  // 14. Advance solution in time.
+  // 14. Deallocate memory for solution vector.
   // ---------------------------------------------------------------------------
-  // Have the solution advance over time, but stop to log 100 of the steps.
-  int print_steps = 100;
-  realtype tout;
-  realtype end_time = 50;
-  realtype step_length = 0.5;
-  realtype t = 0;
-  // loop over output points, call CVode, print results, test for error
-  for (tout = step_length; tout <= end_time; tout += step_length) {
-    flag = CVode(cvode_mem, tout, y, &t, CV_NORMAL);
-    std::cout << "t: " << t;
-    std::cout << "\ny:";
-    N_VPrint_Serial(y);
-    if(check_flag(&flag, "CVode", 1)) break;
-  }
+  N_VDestroy(y0);
   // ---------------------------------------------------------------------------
 
-  // 15. Get optional outputs.
+  // 15. Free solver memory.
   // ---------------------------------------------------------------------------
-  // ---------------------------------------------------------------------------
-
-  // 16. Deallocate memory for solution vector.
-  // ---------------------------------------------------------------------------
-  N_VDestroy(y);
+  KINFree(&kin_mem);
   // ---------------------------------------------------------------------------
 
-  // 17. Free solver memory.
-  // ---------------------------------------------------------------------------
-  CVodeFree(&cvode_mem);
-  // ---------------------------------------------------------------------------
-
-  // 18. Free linear solver and matrix memory.
+  // 16. Free linear solver and matrix memory.
   // ---------------------------------------------------------------------------
   SUNLinSolFree(LS);
+  // ---------------------------------------------------------------------------
+
+  // 17. Finalize MPI, if used.
+  // ---------------------------------------------------------------------------
   // ---------------------------------------------------------------------------
 
   // return(0);
 }
 
 // Simple function that calculates the differential equation.
-static int f(realtype t, N_Vector u, N_Vector u_dot, void *user_data) {
+static int f(N_Vector u, N_Vector f_val, void *user_data) {
   // N_VGetArrayPointer returns a pointer to the data in the N_Vector class.
   realtype *udata  = N_VGetArrayPointer(u); // pointer u vector data
-  realtype *dudata = N_VGetArrayPointer(u_dot); // pointer to udot vector data
+  realtype *fdata = N_VGetArrayPointer(f_val); // pointer to udot vector data
 
-  dudata[0] = -101.0 * udata[0] - 100.0 * udata[1];
-  dudata[1] = udata[0];
+  fdata[0] = -101.0 * udata[0] - 100.0 * udata[1];
+  fdata[1] = udata[0];
 
   return(0);
 }

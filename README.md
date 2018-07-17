@@ -43,3 +43,7 @@ onto the line:
 ```
 LINK_FLAGS = 
 ```
+
+## Sundials Examples (CVODE, KINSOL)
+
+More examples for SUNDIALS libraries can be found in the more-sundials-examples folder.
