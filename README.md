@@ -26,24 +26,6 @@ Appendix A of the CVODE guide gives a pretty good tutorial of how to download, i
 /usr/local
 ```
 
-## Makefile
-
-For those who are Makefile beginners, a simple solution is to use the cpp generic Makefile from:
-
- - https://github.com/mbcrawfo/GenericMakefile
- 
-Then add:
-
-```
--lsundials_cvode -lsundials_nvecserial
-```
-
-onto the line:
-
-```
-LINK_FLAGS = 
-```
-
 ## Sundials Examples (CVODE, KINSOL)
 
 More examples for SUNDIALS libraries can be found in the more-sundials-examples folder.

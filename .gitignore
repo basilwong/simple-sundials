@@ -32,3 +32,8 @@
 *.app
 
 src/bin/
+src/build/
+more-sundials-examples/KINSOL/simple-example/bin/
+more-sundials-examples/KINSOL/simple-example/build/
+more-sundials-examples/CVODES/simple-adjoint-serial-example/bin/
+more-sundials-examples/CVODES/simple-adjoint-serial-example/bin/

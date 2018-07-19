@@ -24,8 +24,6 @@ static int check_flag(void *flagvalue, const char *funcname, int opt);
 
 int main() {
   int flag; // For checking if functions have run properly
-  realtype abstol = 1e-5; // real tolerance of system
-  realtype reltol = 1e-5; // absolute tolerance of system
 
   // 1. Initialize parallel or multi-threaded environment, if appropriate.
   // ---------------------------------------------------------------------------
@@ -44,7 +42,7 @@ int main() {
   NV_Ith_S(y0, 1) = 1;
   if (check_flag((void *)y0, "N_VNew_Serial", 0)) return(1);
 
-  N_Vector sc;
+  N_Vector sc; // Scaling vector.
   sc = N_VNew_Serial(N);
   NV_Ith_S(sc, 0) = 1.0;
   NV_Ith_S(sc, 1) = 1.0;
