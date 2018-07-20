@@ -46,7 +46,7 @@ int main() {
   // 4. Set initial conditions for the forward problem.
   // ---------------------------------------------------------------------------
   N_Vector y_forward; // Problem vector.
-  y_forward = N_VNew_Serial(N_forwrad);
+  y_forward = N_VNew_Serial(N_forward);
   NV_Ith_S(y_forward, 0) = 2.0;
   NV_Ith_S(y_forward, 1) = 1.0;
   // ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@ int main() {
   // 6. Initialize CVODES for the forward problem.
   // ---------------------------------------------------------------------------
   realtype t0 = 0; // Initiale value of time.
-  flag = CVodeInit(cvode_mem, f, t0, y);
+  flag = CVodeInit(cvode_mem, f, t0, y_forward);
   if (check_flag(&flag, "CVodeSetUserData", 1)) return(1);
   // ---------------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ int main() {
   // iterative solver that is designed to be compatible with any nvector
   // implementation (serial, threaded, parallel,
   // user-supplied)that supports a minimal subset of operations.
-  LS = SUNSPGMR(y, 0, 0);
+  LS = SUNSPGMR(y_forward, 0, 0);
   if (check_flag((void *)LS, "SUNSPGMR", 0)) return(1);
   // ---------------------------------------------------------------------------
 
@@ -116,8 +116,9 @@ int main() {
 
   // 16. Allocate space for the adjoint computation.
   // ---------------------------------------------------------------------------
+  long int nsteps = 300; // integration steps between consecutive checkpoints
   // Type of interpolation used depends on CV_POLYNOMIAL or CV_HERMITE.
-  flag = CVodeAdjInit(cvode_mem, NSTEPS, CV_HERMITE);
+  flag = CVodeAdjInit(cvode_mem, nsteps, CV_HERMITE);
   if (check_flag(&flag, "CVadjInit", 1)) return(1);
   // ---------------------------------------------------------------------------
 
@@ -131,21 +132,22 @@ int main() {
   realtype t = 0;
   int ncheck = 0;
   // loop over output points, call CVode, print results, test for error
+  std::cout << "Performing Forward Integration: \n\n";
   for (tout = step_length; tout <= end_time; tout += step_length) {
     // CVodeF is similar to the CVode advance in time operation, but it also
     // stores checkpoint data every Nd integration steps.
     flag = CVodeF(
         cvode_mem, // pointer to the cvodes memory block
         tout, // the next time at which a computed solution is desired
-        y, // the computed solution vector y
+        y_forward, // the computed solution vector y
         &t, // the time reached by the solver (output)
         CV_NORMAL, // CV_NORMAL has the solver take internal steps until it has
                    // reached or just passed the user-speciﬁed tout parameter
         &ncheck //  the number of (internal) checkpoints stored so far
         );
-    // std::cout << "t: " << t;
-    // std::cout << "\ny:";
-    // N_VPrint_Serial(y);
+    std::cout << "t: " << t;
+    std::cout << "\ny:";
+    N_VPrint_Serial(y_forward);
     if (check_flag(&flag, "CVodeF", 1)) break;
   }
   // ---------------------------------------------------------------------------
@@ -189,12 +191,17 @@ int main() {
   // ---------------------------------------------------------------------------
   // ---------------------------------------------------------------------------
 
-  // 24. Create linear solver for the backward problem.
+  // 24. Create matrix object for the backward problem.
   // ---------------------------------------------------------------------------
   // ---------------------------------------------------------------------------
 
-  // 25. Create linear solver for the backwrad problem.
+  // 25. Create linear solver for the backward problem.
   // ---------------------------------------------------------------------------
+  SUNLinearSolver LSB = SUNSPGMR(y_backward, 0, 0);
+  if (check_flag((void *)LSB, "SUNSPGMR", 0)) return(1);
+
+  flag = CVSpilsSetLinearSolverB(cvode_mem, indexB, LSB);
+  if (check_flag(&flag, "CVSpilsSetLinearSolverB", 1)) return 1;
   // ---------------------------------------------------------------------------
 
   // 26. Set linear solver interface optional inputs for the backward problem.
@@ -207,23 +214,55 @@ int main() {
 
   // 28. Integrate backward problem.
   // ---------------------------------------------------------------------------
-  // ---------------------------------------------------------------------------
+  // flag = CVodeB(cvode_mem, T0, CV_NORMAL);
+  // if (check_flag(&flag, "CVodeB", 1)) return(1);
 
+  // Have the solution advance over time, but stop to log 100 of the steps.
+  // int print_steps = 100;
+  // realtype tout;
+  // realtype end_time = 50;
+  // realtype step_length = 0.5;
+  // realtype t = 0;
+  // int ncheck = 0;
+  // loop over output points, call CVode, print results, test for error
+  std::cout << "Performing Backward Integration: \n\n";
+  for (tout = step_length; tout <= end_time; tout += step_length) {
+    // CVodeB is essentially a wrapper for CVode but does not directly return
+    // the solution (need to call CVodeGetB).
+    flag = CVodeB(
+        cvode_mem, // pointer to the cvodes memory block
+        tout, // the next time at which a computed solution is desired
+        CV_NORMAL // CV_NORMAL has the solver take internal steps until it has
+                  // reached or just passed the user-speciﬁed tout parameter
+        );
+    std::cout << "t: " << t;
+    std::cout << "\ny:";
+    flag = CVodeGetB(cvode_mem, indexB, &t, y_backward);
+    if (check_flag(&flag, "CVodeGetB", 1)) return(1);
+    N_VPrint_Serial(y_backward);
+    if (check_flag(&flag, "CVodeF", 1)) break;
+  }
+
+  // ---------------------------------------------------------------------------
 
   // 29. Extract quadrature variables.
   // ---------------------------------------------------------------------------
   // ---------------------------------------------------------------------------
 
-
-  // 16. Deallocate memory.
+  // 30. Deallocate memory.
   // ---------------------------------------------------------------------------
-  N_VDestroy(y);
+  N_VDestroy(y_forward);
+  N_VDestroy(y_backward);
   CVodeFree(&cvode_mem);
   // ---------------------------------------------------------------------------
 
-  // 18. Free linear solver and matrix memory for the backward problem.
+  // 31. Free linear solver and matrix memory for the backward problem.
   // ---------------------------------------------------------------------------
   SUNLinSolFree(LS);
+  // ---------------------------------------------------------------------------
+
+  // 32. Finalize MPI, if used.
+  // ---------------------------------------------------------------------------
   // ---------------------------------------------------------------------------
 
   return(0);
@@ -245,8 +284,8 @@ static int f(realtype t, N_Vector u, N_Vector u_dot, void *user_data) {
 static int fb(realtype t, N_Vector y, N_Vector yB, N_Vector yBdot,
               void *user_data) {
   // N_VGetArrayPointer returns a pointer to the data in the N_Vector class.
-  realtype *udata  = N_VGetArrayPointer(u); // pointer u vector data
-  realtype *dudata = N_VGetArrayPointer(u_dot); // pointer to udot vector data
+  realtype *udata  = N_VGetArrayPointer(y); // pointer u vector data
+  realtype *dudata = N_VGetArrayPointer(yBdot); // pointer to udot vector data
 
   dudata[0] = -101.0 * udata[0] - 100.0 * udata[1];
   dudata[1] = udata[0];
