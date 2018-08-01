@@ -1,18 +1,18 @@
-## What is KINSOL?
+## What is CVODES?
 
-KINSOL is a solver for nonlinear algebraic systems. It includes a Newton-Krylov solver as well as Picard and fixed point solvers, both of which can be accelerated with Anderson acceleration. KINSOL is based on the previous Fortran package NKSOL of Brown and Saad.
+CVODES is a solver for stiff and nonstiff ODE systems (initial value problem) given in explicit form y’ = f(t,y,p) with sensitivity analysis capabilities (both forward and adjoint modes).
 
-KINSOL’s Newton solver employs the Inexact Newton method. As this solver is intended mainly for large systems, four iterative methods are provided to solve the resulting linear systems–GMRES, Bi-CGStab, TFQMR, and FGMRES. These are Krylov methods, implemented with scaling and preconditioning, and can be used with all versions of the NVECTOR module.
+CVODES is a superset of CVODE and hence all options available to CVODE (with the exception of the FCVODE interface module) are also available for CVODES.
 
- - https://computation.llnl.gov/projects/sundials/kinsol
+ - https://computation.llnl.gov/projects/sundials/cvodes
 
-## Where do I get the KINSOL package?
+## Where do I get the CVODES package?
 
 To download the libraries go to their software download page:
 
  - https://computation.llnl.gov/projects/sundials/sundials-software
 
-Appendix A of the KINSOL guide gives a pretty good tutorial of how to download, install, and configure the libraries for use depending on the OS you're currently using. 
+Appendix A of the CVODE guide gives a pretty good tutorial of how to download, install, and configure the all sundials libraries for use depending on the OS you're currently using. 
 
  - https://computation.llnl.gov/sites/default/files/public/cv_guide.pdf
  
