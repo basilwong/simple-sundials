@@ -12,7 +12,7 @@ To download the libraries go to their software download page:
 
  - https://computation.llnl.gov/projects/sundials/sundials-software
 
-Appendix A of the KINSOL guide gives a pretty good tutorial of how to download, install, and configure the libraries for use depending on the OS you're currently using. 
+Appendix A of the CVODE guide gives a pretty good tutorial of how to download, install, and configure all SUNDIALS libraries for use depending on the OS you're currently using. 
 
  - https://computation.llnl.gov/sites/default/files/public/cv_guide.pdf
  
