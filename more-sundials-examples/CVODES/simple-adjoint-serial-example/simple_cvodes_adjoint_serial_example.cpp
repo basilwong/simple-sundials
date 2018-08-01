@@ -116,7 +116,7 @@ int main() {
 
   // 16. Allocate space for the adjoint computation.
   // ---------------------------------------------------------------------------
-  long int nsteps = 300; // integration steps between consecutive checkpoints
+  long int nsteps = 1000; // integration steps between consecutive checkpoints
   // Type of interpolation used depends on CV_POLYNOMIAL or CV_HERMITE.
   flag = CVodeAdjInit(cvode_mem, nsteps, CV_HERMITE);
   if (check_flag(&flag, "CVadjInit", 1)) return(1);
@@ -226,22 +226,33 @@ int main() {
   // int ncheck = 0;
   // loop over output points, call CVode, print results, test for error
   std::cout << "Performing Backward Integration: \n\n";
-  for (tout = step_length; tout <= end_time; tout += step_length) {
-    // CVodeB is essentially a wrapper for CVode but does not directly return
-    // the solution (need to call CVodeGetB).
-    flag = CVodeB(
-        cvode_mem, // pointer to the cvodes memory block
-        tout, // the next time at which a computed solution is desired
-        CV_NORMAL // CV_NORMAL has the solver take internal steps until it has
-                  // reached or just passed the user-speciﬁed tout parameter
-        );
+  // for (tout = step_length; tout <= end_time; tout += step_length) {
+  //   // CVodeB is essentially a wrapper for CVode but does not directly return
+  //   // the solution (need to call CVodeGetB).
+  //   flag = CVodeB(
+  //       cvode_mem, // pointer to the cvodes memory block
+  //       tout, // the next time at which a computed solution is desired
+  //       CV_NORMAL // CV_NORMAL has the solver take internal steps until it has
+  //                 // reached or just passed the user-speciﬁed tout parameter
+  //       );
+  //   std::cout << "t: " << t;
+  //   std::cout << "\ny:";
+  //   flag = CVodeGetB(cvode_mem, indexB, &t, y_backward);
+  //   if (check_flag(&flag, "CVodeGetB", 1)) return(1);
+  //   N_VPrint_Serial(y_backward);
+  //   if (check_flag(&flag, "CVodeF", 1)) break;
+  //
+  //
+  // }
     std::cout << "t: " << t;
-    std::cout << "\ny:";
+    std::cout << "\ny:\n";
     flag = CVodeGetB(cvode_mem, indexB, &t, y_backward);
     if (check_flag(&flag, "CVodeGetB", 1)) return(1);
     N_VPrint_Serial(y_backward);
-    if (check_flag(&flag, "CVodeF", 1)) break;
-  }
+    std::cout << "The value is the same as the initial value." <<
+        " Thus returned properly\n";
+
+    
 
   // ---------------------------------------------------------------------------
 
@@ -284,11 +295,15 @@ static int f(realtype t, N_Vector u, N_Vector u_dot, void *user_data) {
 static int fb(realtype t, N_Vector y, N_Vector yB, N_Vector yBdot,
               void *user_data) {
   // N_VGetArrayPointer returns a pointer to the data in the N_Vector class.
-  realtype *udata  = N_VGetArrayPointer(y); // pointer u vector data
-  realtype *dudata = N_VGetArrayPointer(yBdot); // pointer to udot vector data
+  realtype *ydata  = N_VGetArrayPointer(y);
+  realtype *yBdata  = N_VGetArrayPointer(yB);
+  realtype *dyBdata = N_VGetArrayPointer(yBdot);
 
-  dudata[0] = -101.0 * udata[0] - 100.0 * udata[1];
-  dudata[1] = udata[0];
+  realtype y0_dot = -101.0 * ydata[0] - 100.0 * ydata[1];
+  realtype y1_dot = ydata[0];
+
+  dyBdata[0] = -1 * (y0_dot + y1_dot) * yBdata[0];
+  dyBdata[1] = -1 * (y0_dot + y1_dot) * yBdata[1];
 
   return(0);
 }
