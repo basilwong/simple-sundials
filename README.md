@@ -26,6 +26,19 @@ Appendix A of the CVODE guide gives a pretty good tutorial of how to download, i
 /usr/local
 ```
 
-## Sundials Examples (CVODE, KINSOL)
+## Sundials Examples (CVODE, CVODES, KINSOL)
 
 More examples for SUNDIALS libraries can be found in the more-sundials-examples folder.
+
+### KINSOL
+
+ - Simple rootfinding example.
+
+### CVODE
+
+ - Example of how to implement user data for the system. Building block for implementing solver for complex systems. 
+
+### CVODES
+
+ - Simple serial example with adjoint sensitivity analysis for stiff systems. 
+
