@@ -39,4 +39,6 @@ more-sundials-examples/CVODES/simple-adjoint-serial-example/bin/
 more-sundials-examples/CVODES/simple-adjoint-serial-example/build/
 more-sundials-examples/CVODE/simple-use-of-user-data/bin/
 more-sundials-examples/CVODE/simple-use-of-user-data/build/
+more-sundials-examples/CVODE/simple-use-of-user-data/bin/
+more-sundials-examples/CVODE/simple-use-of-user-data/bin/
 
