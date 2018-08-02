@@ -36,4 +36,7 @@ src/build/
 more-sundials-examples/KINSOL/simple-example/bin/
 more-sundials-examples/KINSOL/simple-example/build/
 more-sundials-examples/CVODES/simple-adjoint-serial-example/bin/
-more-sundials-examples/CVODES/simple-adjoint-serial-example/bin/
+more-sundials-examples/CVODES/simple-adjoint-serial-example/build/
+more-sundials-examples/CVODE/simple-use-of-user-data/bin/
+more-sundials-examples/CVODE/simple-use-of-user-data/build/
+
