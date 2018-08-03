@@ -1,16 +1,26 @@
 ## Simple User Data Example
 
-This example builds on the original "Simple CVODE Example" by adding a simple example of allocating memory for user data to be used in the ODE rhs function. 
+This is a simple example showing how to use OPEN-MPI to implement parallel computing for integration. 
 
- - The UserData struct defines the variables required by the ODE problem. 
+### Install OPEN-MPI
 
- - The alloc_user_data function is used to initialize the variables to be used. 
+In order to get parallel computing working, first install OPEN-MPI from the OPEN-MPI website:
 
- - Setting the user data is part of the optional inputs(7) step. 
+ - https://www.open-mpi.org/software/ompi/v3.1/
  
- - Remember to free the pointer used by the user data as shown in step 18 of the code. 
- 
- - In this example it is the function for the problem's differential equation that uses the variables defined in the user data pointer. Since the structure of the function (as defined by CVODE) requires that user_data be inputted as a void pointer, you have to cast the pointer variable to the defined struct as shown in the code. 
+The [FAQ](https://www.open-mpi.org/faq/?category=building#easy-build) page on the OPEN-MPI webisite gives the instruction for how to install the downloaded openmpi-3.x.x.tar.gz file:
+
+```
+shell$ gunzip -c openmpi-3.1.1.tar.gz | tar xf -
+shell$ cd openmpi-3.1.1
+shell$ ./configure --prefix=/usr/local
+<...lots of output...>
+shell$ make all install
+```
+
+### Configure the CVODE install for MPI
+
+
 
 ## Makefile
 
