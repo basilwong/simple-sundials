@@ -6,9 +6,9 @@ as a stiff system.
 #include <iostream>
 #include <cvode/cvode.h> // prototypes for CVODE fcts., consts.
 #include <nvector/nvector_serial.h>  // access to serial N_Vector
+#include <nvector/nvector_parallel.h>  // access to parallel N_Vector
 #include <sunlinsol/sunlinsol_spgmr.h>  //access to SPGMR SUNLinearSolver
 #include <cvode/cvode_spils.h> // access to CVSpils interface
-#include <sundials/sundials_dense.h>  // use generic dense solver in precond
 #include <sundials/sundials_types.h>  // defs. of realtype, sunindextype
 #include <sundials/sundials_math.h>  // contains the macros ABS, SUNSQR, EXP
 
