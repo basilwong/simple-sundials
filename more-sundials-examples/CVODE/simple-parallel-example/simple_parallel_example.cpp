@@ -22,13 +22,33 @@ static int jtv(N_Vector v, N_Vector Jv, realtype t, N_Vector u, N_Vector fu,
 static int check_flag(void *flagvalue, const char *funcname, int opt);
 
 
-int main() {
+int main(int argc, char** argv) {
   int flag; // For checking if functions have run properly
   realtype abstol = 1e-5; // real tolerance of system
   realtype reltol = 1e-5; // absolute tolerance of system
 
   // 1. Initialize parallel or multi-threaded environment, if appropriate.
   // ---------------------------------------------------------------------------
+  // Initialize the MPI environment
+  MPI_Init(NULL, NULL);
+
+  // Get the number of processes
+  int world_size;
+  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+  // Get the rank of the process
+  int world_rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+  // Get the name of the processor
+  char processor_name[MPI_MAX_PROCESSOR_NAME];
+  int name_len;
+  MPI_Get_processor_name(processor_name, &name_len);
+
+  // Print off a hello world message
+  printf("Hello world from processor %s, rank %d out of %d processors\n",
+         processor_name, world_rank, world_size);
+
   // ---------------------------------------------------------------------------
 
   // 2. Defining the length of the problem.
@@ -142,6 +162,12 @@ int main() {
   // 18. Free linear solver and matrix memory.
   // ---------------------------------------------------------------------------
   SUNLinSolFree(LS);
+  // ---------------------------------------------------------------------------
+
+  // 19. Finalize MPI, if used
+  // ---------------------------------------------------------------------------
+  // Finalize the MPI environment.
+  MPI_Finalize();
   // ---------------------------------------------------------------------------
 
   // return(0);
