@@ -106,7 +106,7 @@ LDFLAGS = -Wall
 Example of the command for running the MPI program. 
 
 ```
-mpirun -n 8 ./parallel
+mpirun -n 2 ./parallel
 ```
 
  - mpirun is the command to run the program.
