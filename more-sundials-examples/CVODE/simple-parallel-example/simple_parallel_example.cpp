@@ -14,7 +14,7 @@ as a stiff system.
 
 // This macro gives access to the individual components of the data array of an
 // N Vector.
-#define NV_Ith_S(v,i) ( NV_DATA_S(v)[i] )
+#define NV_Ith_P(v,i) ( NV_DATA_P(v)[i] )
 
 static int f(realtype t, N_Vector u, N_Vector u_dot, void *user_data);
 static int jtv(N_Vector v, N_Vector Jv, realtype t, N_Vector u, N_Vector fu,
@@ -59,11 +59,10 @@ int main(int argc, char** argv) {
   // 3. Set vector of initial values.
   // ---------------------------------------------------------------------------
   N_Vector y; // Problem vector.
-  // realtype y_0[N] = {2.0, 1.0};
-  // y = N_VMake_Serial(N, y_0);
-  y = N_VNew_Serial(N);
-  NV_Ith_S(y, 0) = 2.0;
-  NV_Ith_S(y, 1) = 1.0;
+  // y = N_VNew_Serial(N);
+  y = N_VNew_Parallel(MPI_COMM_WORLD, N, N);
+  NV_Ith_P(y, 0) = 2.0;
+  NV_Ith_P(y, 1) = 1.0;
   // ---------------------------------------------------------------------------
 
   // 4. Create CVODE Object.
@@ -140,7 +139,7 @@ int main(int argc, char** argv) {
     flag = CVode(cvode_mem, tout, y, &t, CV_NORMAL);
     std::cout << "t: " << t;
     std::cout << "\ny:";
-    N_VPrint_Serial(y);
+    // N_VPrint_Serial(y);
     if(check_flag(&flag, "CVode", 1)) break;
   }
   // ---------------------------------------------------------------------------
