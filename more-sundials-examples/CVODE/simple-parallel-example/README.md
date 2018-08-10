@@ -87,7 +87,7 @@ Compiling and running a MPI program requires slightly different commands than a 
 
 To compile the simple CVODE parallel example the makefile is slightly different. The makefile currently being used is from the [Projectdummies](https://github.com/rkoenigstein/Projectdummies) GitHub repository, which contains makefiles for C/C++ programs including parallel libraries. 
 
-Essentially the main change is that the program uses the ```mpicc``` or ```mpic++``` compiler, which compile C/C++ MPI programs.
+Essentially the main change is that the program uses the ```mpicc``` or ```mpic++``` compiler, which compiles C/C++ MPI programs.
 
 Additionally the CVODE libraries need to be linked on the makefile by adding:
 
@@ -106,7 +106,7 @@ LDFLAGS = -Wall
 Example of the command for running the MPI program. 
 
 ```
-mpirun -n 8 ./parallel
+mpirun -n 2 ./parallel
 ```
 
  - mpirun is the command to run the program.
