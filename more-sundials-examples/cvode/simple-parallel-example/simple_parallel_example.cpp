@@ -119,9 +119,8 @@ int main(int argc, char** argv) {
   // 12. Set linear solver interface optional inputs.
   // ---------------------------------------------------------------------------
   // Sets the jacobian-times-vector function.
-  // flag = CVSpilsSetJacTimes(cvode_mem, NULL, jtv);
-  // if(check_flag(&flag, "CVSpilsSetJacTimes", 1)) return(1);
-
+  flag = CVSpilsSetJacTimes(cvode_mem, NULL, jtv);
+  if(check_flag(&flag, "CVSpilsSetJacTimes", 1)) return(1);
   // ---------------------------------------------------------------------------
 
   // 13. Specify rootfinding problem.
@@ -193,7 +192,7 @@ static int f(realtype t, N_Vector u, N_Vector u_dot, void *user_data) {
     send_data = udata[0];
   }
 
-  // Puting the calculations together. 
+  // Puting the calculations together.
   MPI_Barrier(MPI_COMM_WORLD);
   MPI_Allgather(&send_data, 1, MPI_DOUBLE, dudata, 1, MPI_DOUBLE, MPI_COMM_WORLD);
 
@@ -203,13 +202,26 @@ static int f(realtype t, N_Vector u, N_Vector u_dot, void *user_data) {
 // Jacobian function vector routine.
 static int jtv(N_Vector v, N_Vector Jv, realtype t, N_Vector u, N_Vector fu,
                void *user_data, N_Vector tmp) {
+  realtype send_data;
   realtype *udata  = N_VGetArrayPointer(u);
   realtype *vdata  = N_VGetArrayPointer(v);
   realtype *Jvdata = N_VGetArrayPointer(Jv);
   realtype *fudata = N_VGetArrayPointer(fu);
 
-  Jvdata[0] = -101.0 * vdata[0] + -100.0 * vdata[1];
-  Jvdata[1] = vdata[0] + 0 * vdata[1];
+  // Access inforation in user_data.
+  UserData *u_data;
+  u_data = (UserData*) user_data;
+
+  // Different processes calculate differnt parts of thee output vector u_dot.
+  if (u_data->rank == 0) {
+    send_data =  -101.0 * vdata[0] + -100.0 * vdata[1];
+  } else {
+    send_data = vdata[0] + 0 * vdata[1];
+  }
+
+  // Puting the calculations together.
+  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Allgather(&send_data, 1, MPI_DOUBLE, Jvdata, 1, MPI_DOUBLE, MPI_COMM_WORLD);
 
   fudata[0] = 0;
   fudata[1] = 0;

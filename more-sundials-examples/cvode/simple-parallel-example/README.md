@@ -7,6 +7,12 @@ This example is a guide for how to setup MPI for a parallel environment on a loc
 
 MPI stands for "Message Passing Interface". MPI is a standard defined by a large committee of experts from industry and academia. 
 
+For more information on how to work with MPI
+
+ - http://mpitutorial.com/tutorials/
+ 
+is a good place to start learning. 
+
 
 ## Environment Setup
 
@@ -117,4 +123,70 @@ mpirun -n 2 ./parallel
 
 
 
+## MPI with CVODE
+
+In this section, the changes from the simple example to the parallel example are 
+described. 
+
+### Includes
+
+```
+#include <nvector/nvector_parallel.h>  
+```
+
+### N_Vector access
+
+The defined macro needs to be changed for N_Vector_Parallel struct. 
+
+```
+#define NV_Ith_P(v,i) ( NV_DATA_P(v)[i] )
+```
+
+### Initialize MPI Environment
+
+```
+  // Initialize the MPI environment
+  MPI_Init(NULL, NULL);
+
+  // Get the number of processes
+  int world_size;
+  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+  // Get the rank of the process
+  int world_rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+  // Setup User Data Pointer so the function for the ODE can know the process
+  // rank.
+  UserData *data = alloc_user_data(world_rank, world_size);
+```
+
+Is added to step 1 in the 'main' function.
+
+In this example we utilize UserData to pass the process rank and the size of the communicator to the function for calculating the derivative. 
+
+For more information on how to utilize UserData with CVODE go to the example in 
+
+```
+simple-sundials-example\more-sundials-examples\cvode
+```
+
+of this repository. 
+
+### Finalize MPI
+
+```
+  // Finalize the MPI environment.
+  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Finalize();
+```
+
+Is added in step 19 as the last step before finishing the 'main' function. This is used to clean up any memory allocated for the utilized processes.
+
+### In the Derivative Calculation
+
+Here we have the two processes each calculating one of the terms in the size 2 global derivative vector. 
+
+In practice, the size of the problem should be much larger in order to make up for the overhead of parallelizing the problem. 
+
+ 
 
