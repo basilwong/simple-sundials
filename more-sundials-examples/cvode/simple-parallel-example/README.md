@@ -1,6 +1,7 @@
 # Simple Parallel Example
 
-Showing how to use implement the parallel capabilities of the CVODE package on the original simple cvode example which is implemented serially. 
+This example is a guide for how to setup MPI for a parallel environment on a local computer in addition to showing how to use implement the most basic parallel capabilities of the CVODE package on the original simple cvode example which is implemented serially. 
+
 
 ## What is MPI?
 
