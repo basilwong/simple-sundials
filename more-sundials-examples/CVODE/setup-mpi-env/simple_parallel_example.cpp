@@ -16,11 +16,17 @@ as a stiff system.
 // N Vector.
 #define NV_Ith_P(v,i) ( NV_DATA_P(v)[i] )
 
+// Struct for holding the nessesary additional variables for the problem.
+struct UserData {
+  int rank;
+  int size;
+};
+
 static int f(realtype t, N_Vector u, N_Vector u_dot, void *user_data);
 static int jtv(N_Vector v, N_Vector Jv, realtype t, N_Vector u, N_Vector fu,
                void *user_data, N_Vector tmp);
 static int check_flag(void *flagvalue, const char *funcname, int opt);
-
+UserData* alloc_user_data(int rank, int size);
 
 int main(int argc, char** argv) {
   int flag; // For checking if functions have run properly
@@ -39,28 +45,22 @@ int main(int argc, char** argv) {
   // Get the rank of the process
   int world_rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-  // Get the name of the processor
-  char processor_name[MPI_MAX_PROCESSOR_NAME];
-  int name_len;
-  MPI_Get_processor_name(processor_name, &name_len);
-
-  // Print off a hello world message
-  printf("Hello world from processor %s, rank %d out of %d processors\n",
-         processor_name, world_rank, world_size);
-
+  // Setup User Data Pointer so the function for the ODE can know the process
+  // rank.
+  UserData *data = alloc_user_data(world_rank, world_size);
   // ---------------------------------------------------------------------------
 
   // 2. Defining the length of the problem.
   // ---------------------------------------------------------------------------
-  sunindextype N = 2;
+  sunindextype n = 2;
+  sunindextype n_global = n * world_size;
   // ---------------------------------------------------------------------------
 
   // 3. Set vector of initial values.
   // ---------------------------------------------------------------------------
   N_Vector y; // Problem vector.
   // y = N_VNew_Serial(N);
-  y = N_VNew_Parallel(MPI_COMM_WORLD, N, N);
+  y = N_VNew_Parallel(MPI_COMM_WORLD, n, n_global);
   NV_Ith_P(y, 0) = 2.0;
   NV_Ith_P(y, 1) = 1.0;
   // ---------------------------------------------------------------------------
@@ -86,6 +86,8 @@ int main(int argc, char** argv) {
 
   // 7. Set Optional inputs.
   // ---------------------------------------------------------------------------
+  /* Set the pointer to user-defined data */
+  flag = CVodeSetUserData(cvode_mem, data);
   // ---------------------------------------------------------------------------
 
   // 8. Create Matrix Object.
@@ -117,8 +119,8 @@ int main(int argc, char** argv) {
   // 12. Set linear solver interface optional inputs.
   // ---------------------------------------------------------------------------
   // Sets the jacobian-times-vector function.
-  flag = CVSpilsSetJacTimes(cvode_mem, NULL, jtv);
-  if(check_flag(&flag, "CVSpilsSetJacTimes", 1)) return(1);
+  // flag = CVSpilsSetJacTimes(cvode_mem, NULL, jtv);
+  // if(check_flag(&flag, "CVSpilsSetJacTimes", 1)) return(1);
 
   // ---------------------------------------------------------------------------
 
@@ -139,7 +141,7 @@ int main(int argc, char** argv) {
     flag = CVode(cvode_mem, tout, y, &t, CV_NORMAL);
     std::cout << "t: " << t;
     std::cout << "\ny:";
-    // N_VPrint_Serial(y);
+    N_VPrint_Parallel(y);
     if(check_flag(&flag, "CVode", 1)) break;
   }
   // ---------------------------------------------------------------------------
@@ -166,6 +168,7 @@ int main(int argc, char** argv) {
   // 19. Finalize MPI, if used
   // ---------------------------------------------------------------------------
   // Finalize the MPI environment.
+  MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
   // ---------------------------------------------------------------------------
 
@@ -174,12 +177,25 @@ int main(int argc, char** argv) {
 
 // Simple function that calculates the differential equation.
 static int f(realtype t, N_Vector u, N_Vector u_dot, void *user_data) {
-  // N_VGetArrayPointer returns a pointer to the data in the N_Vector class.
-  realtype *udata  = N_VGetArrayPointer(u); // pointer u vector data
-  realtype *dudata = N_VGetArrayPointer(u_dot); // pointer to udot vector data
 
-  dudata[0] = -101.0 * udata[0] - 100.0 * udata[1];
-  dudata[1] = udata[0];
+  realtype *udata = N_VGetArrayPointer(u);
+  realtype *dudata = N_VGetArrayPointer(u_dot);
+  realtype send_data;
+
+  // Access inforation in user_data.
+  UserData *u_data;
+  u_data = (UserData*) user_data;
+
+  // Different processes calculate differnt parts of thee output vector u_dot.
+  if (u_data->rank == 0) {
+    send_data = -101.0 * udata[0] - 100.0 * udata[1];
+  } else {
+    send_data = udata[0];
+  }
+
+  // Puting the calculations together. 
+  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Allgather(&send_data, 1, MPI_DOUBLE, dudata, 1, MPI_DOUBLE, MPI_COMM_WORLD);
 
   return(0);
 }
@@ -235,3 +251,15 @@ static int check_flag(void *flagvalue, const char *funcname, int opt) {
 
   return(0);
 }
+
+// Initalizes the coefficients for the user data pointer.
+ UserData* alloc_user_data(int rank, int size) {
+   // Setup User Data.
+   UserData *data;
+   data = new UserData();
+
+   data->rank = rank;
+   data->size = size;
+
+   return data;
+ }
