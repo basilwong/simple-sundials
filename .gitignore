@@ -41,6 +41,6 @@ more-sundials-examples/CVODE/simple-use-of-user-data/bin/
 more-sundials-examples/CVODE/simple-use-of-user-data/build/
 more-sundials-examples/CVODE/simple-use-of-user-data/bin/
 more-sundials-examples/CVODE/simple-use-of-user-data/build/
-more-sundials-examples/CVODE/simple-parallel-example/bin/
-more-sundials-examples/CVODE/simple-parallel-example/build/
+more-sundials-examples/CVODE/setup-mpi-env/bin/
+more-sundials-examples/CVODE/setup-mpi-env/build/
 
