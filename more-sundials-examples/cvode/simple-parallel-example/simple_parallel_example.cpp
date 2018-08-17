@@ -162,6 +162,7 @@ int main(int argc, char** argv) {
   // 18. Free linear solver and matrix memory.
   // ---------------------------------------------------------------------------
   SUNLinSolFree(LS);
+  delete data;
   // ---------------------------------------------------------------------------
 
   // 19. Finalize MPI, if used
