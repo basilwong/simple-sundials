@@ -83,7 +83,7 @@ int main() {
   // ---------------------------------------------------------------------------
   // Dense linear solver object instead of the iterative one in the original
   // simple example.
-  SUNLinearSolver LS = SUNDenseLinearSolver(y, A);
+  SUNLinearSolver LS = SUNDenseLinearSolver(y, A) ;
   if(check_flag((void *)LS, "SUNDenseLinearSolver", 0)) return(1);
   // ---------------------------------------------------------------------------
 
