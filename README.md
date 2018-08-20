@@ -16,7 +16,7 @@ To download the libraries go to their software download page:
 
  - https://computation.llnl.gov/projects/sundials/sundials-software
 
-Libraries such as CVODE can be downloaded individually on the above page. There is also a link on that page to download the (entire SUNDIALS library)[https://computation.llnl.gov/projects/sundials/download/sundials-3.1.2.tar.gz].
+Libraries such as CVODE can be downloaded individually on the above page. There is also a link on that page to download the [entire SUNDIALS library](https://computation.llnl.gov/projects/sundials/download/sundials-3.1.2.tar.gz).
  
 Appendix A of the CVODE guide gives a pretty good tutorial of how to download, install, and configure the libraries for use depending on the OS you're currently using. 
 
