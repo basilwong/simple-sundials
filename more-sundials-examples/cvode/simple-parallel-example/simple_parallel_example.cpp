@@ -59,7 +59,6 @@ int main(int argc, char** argv) {
   // 3. Set vector of initial values.
   // ---------------------------------------------------------------------------
   N_Vector y; // Problem vector.
-  // y = N_VNew_Serial(N);
   y = N_VNew_Parallel(MPI_COMM_WORLD, n, n_global);
   NV_Ith_P(y, 0) = 2.0;
   NV_Ith_P(y, 1) = 1.0;
