@@ -52,8 +52,6 @@ int main() {
   // 3. Set vector of initial values.
   // ---------------------------------------------------------------------------
   N_Vector y; // Problem vector.
-  // realtype y_0[N] = {2.0, 1.0};
-  // y = N_VMake_Serial(N, y_0);
   y = N_VNew_Serial(N);
   NV_Ith_S(y, 0) = 2.0;
   NV_Ith_S(y, 1) = 1.0;
