@@ -1,4 +1,6 @@
-I found when learning to use the SUNDIALS libraries, that there were few simple examples to start off with for learning from scratch how to use the libraries. So here is a simple example using the CVODE library to solve a simple 2d ODE, treating it as a stiff system. The system is based off of boost's stiff system example at:
+I found there were few simple examples while trying to learn how to use the SUNDIALS libraries. Here are a few simple examples for those starting to utilize the SUNDIALS libraries. 
+
+Within `src` is an example using the CVODE library to solve a simple 2d ODE, treating it as a stiff system. The system is based off of boost's stiff system example at:
 
  - https://www.boost.org/doc/libs/1_67_0/libs/numeric/odeint/doc/html/boost_numeric_odeint/tutorial/stiff_systems.html
  
