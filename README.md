@@ -10,19 +10,19 @@ for comparison purposes.
 
 SUNDIALS is a SUite of Nonlinear and DIfferential/ALgebraic equation Solvers released by the Lawrence Livermore National Laboratory.
 
- - https://computation.llnl.gov/projects/sundials
+ - https://computing.llnl.gov/projects/sundials
 
 ## How do I download/install the SUDIALS libraries?
 
 To download the libraries go to their software download page:
 
- - https://computation.llnl.gov/projects/sundials/sundials-software
+ - https://computing.llnl.gov/projects/sundials/sundials-software
 
-Libraries such as CVODE can be downloaded individually on the above page. There is also a link on that page to download the [entire SUNDIALS library](https://computation.llnl.gov/projects/sundials/download/sundials-3.1.2.tar.gz).
+Libraries such as CVODE can be downloaded individually on the above page. There is also a link on that page to download the [entire SUNDIALS library](https://github.com/LLNL/sundials/releases/download/v6.5.0/sundials-6.5.0.tar.gz).
  
-Appendix A of the CVODE guide gives a pretty good tutorial of how to download, install, and configure the libraries for use depending on the OS you're currently using. 
+The online documentation gives a good tutorial for how to install the software depending on OS: 
 
- - https://computation.llnl.gov/sites/default/files/public/cv_guide.pdf
+ - https://sundials.readthedocs.io/en/latest/Install_link.html
  
 *Note: The instructions above tell the user to change the generate settings for the install prefix to /usr/casc/sundials/instdir but for the GenericMakeFile it is more simple to leave the ccmake settings as is and keep the generate settings for the install prefix as the default option:
 
